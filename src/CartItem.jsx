@@ -3,33 +3,60 @@ import { useSelector, useDispatch } from 'react-redux';
 import { removeItem, updateQuantity } from './CartSlice';
 import './CartItem.css';
 
-const CartItem = ({ onContinueShopping }) => {
+const CartItem = ({ onContinueShopping, handleItemRemoval }) => {
   const cart = useSelector(state => state.cart.items);
   const dispatch = useDispatch();
 
   // Calculate total amount for all products in the cart
   const calculateTotalAmount = () => {
- 
+    return cart.reduce((total, item) => {
+      return total + (parseFloat(item.cost.substring(1)) * item.quantity);
+    }, 0);
   };
 
   const handleContinueShopping = (e) => {
-   
+    onContinueShopping(e); // Call the function passed as a prop to continue shopping
   };
 
 
 
   const handleIncrement = (item) => {
+    dispatch(updateQuantity({ name: item.name, quantity: item.quantity + 1 }));
+    if (item.quantity <= 0) {
+      dispatch(removeItem(item.name));
+      handleItemRemoval((prevState) => ({ // Update the local state to reflect that the product has been added
+        ...prevState, // Spread the previous state to retain existing entries
+        [item.name]: false, // Set the current product's name as a key with value 'true' to mark it as added
+      }));
+    }
   };
 
   const handleDecrement = (item) => {
-   
+    dispatch(updateQuantity({ name: item.name, quantity: item.quantity - 1 }));
+    if (item.quantity <= 1) {
+      dispatch(removeItem(item.name));
+      handleItemRemoval((prevState) => ({ // Update the local state to reflect that the product has been added
+        ...prevState, // Spread the previous state to retain existing entries
+        [item.name]: false, // Set the current product's name as a key with value 'true' to mark it as added
+      }));
+    }
   };
 
   const handleRemove = (item) => {
+    dispatch(removeItem(item.name));
+    handleItemRemoval((prevState) => ({ // Update the local state to reflect that the product has been added
+        ...prevState, // Spread the previous state to retain existing entries
+        [item.name]: false, // Set the current product's name as a key with value 'true' to mark it as added
+      }));
+  };
+
+  const handleCheckoutShopping = (e) => {
+    alert('Functionality to be added for future reference');
   };
 
   // Calculate total cost based on quantity for an item
   const calculateTotalCost = (item) => {
+    return parseFloat(item.cost.substring(1)) * item.quantity
   };
 
   return (
@@ -57,7 +84,7 @@ const CartItem = ({ onContinueShopping }) => {
       <div className="continue_shopping_btn">
         <button className="get-started-button" onClick={(e) => handleContinueShopping(e)}>Continue Shopping</button>
         <br />
-        <button className="get-started-button1">Checkout</button>
+        <button className="get-started-button1" onClick={(e) => handleCheckoutShopping(e)}>Checkout</button>
       </div>
     </div>
   );
